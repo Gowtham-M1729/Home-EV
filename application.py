@@ -135,6 +135,8 @@ class plug_points:
             "mob_no":mob_no,
             "plu_point":plu_point
         }
+        dbpl.plug.insert_one(pp)
+        return "Suceessfully Updated"
     def delete(self,plu_point,mob_no):
         pp = {
             "_id": uuid.uuid4().hex,
@@ -142,7 +144,8 @@ class plug_points:
             "mobile_no":mob_no,
             "plu_point":plu_point
         }
-        dbpl.pp.remove({"plu_point":plu_point,"mob_no":mob_no})
+        dbpl.plug.remove({"plu_point":plu_point,"mob_no":mob_no})
+        return "Sucessfully Removed"
 
 
 import math
@@ -240,21 +243,31 @@ def requestdetails():
         body = request.json
         cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
         print(cursor)
+        plug_data=list(dbpl.plug.find({"p_name":cursor['p_name']}))
+        plug_json=dumps(plug_data)
         list_cur = list(cursor)
         json_data = dumps(list_cur)
-        return json_data
+        data={
+            "user":json_data,
+            "plug":plug_json
+        }
+        return data
 
 @app.route('/getcoordinates',methods=['POST'])
 def getCoordinates():
     if request.method == 'POST':
         body = request.json
-        data = db.evnts
+        data = dbp.provide
         lst = []
         for post in data.find({}, {'_id': 0}):
             lat=post['latitude']
             long=post['longitude']
-            if haversine(body['lat'],body['long'],lat,long)<=20:
-                lst.append((lat,long))
+            name=post['p_name']
+            mob_no=post['mobile_no']
+            if haversine(float(body['lat']),float(body['long']),float(lat),float(long))<=20:
+                lst.append((lat,long,name,mob_no))
+            print(post)
+        print(lst)
         return jsonify(lst)
     
 
