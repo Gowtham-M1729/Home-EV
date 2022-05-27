@@ -17,7 +17,7 @@ app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
 url = "mongodb+srv://user1234:59dLdTzaKaqimTt@user.vl67u.mongodb.net/user_login_system?retryWrites=true&w=majority"
 client = pymongo.MongoClient(url)
 db = client.customer_details
-
+db1 = client.providers
 
 class provider:
     def start_session(self, provider):
@@ -45,10 +45,10 @@ class provider:
         provider['password'] = pbkdf2_sha256.encrypt(provider['password'])
 
         # Check for existing email address
-        if db.provide.find_one({"p_email": provider['p_email']}):
+        if db1.provide.find_one({"p_email": provider['p_email']}):
             return jsonify({"error": "Email address already in use"}), 400
         print("dfg")
-        if db.provide.insert_one(provider):
+        if db1.provide.insert_one(provider):
             self.start_session(provider)
             return jsonify({"message":"Succesfully signed up"})
 
@@ -57,7 +57,7 @@ class provider:
     def login(self, email, password):
         print("Hello", email, password)
 
-        provider = db.provide.find_one({
+        provider = db1.provide.find_one({
             "p_email": email
         })
         print(provider)
