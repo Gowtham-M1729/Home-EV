@@ -256,6 +256,7 @@ def requestdetails():
         }
         return data
 
+
 @app.route('/getcoordinates',methods=['POST'])
 @cross_origin(supports_credentials=True)
 def getCoordinates():
