@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, session, redirect, url_for
 import uuid
 from passlib.hash import pbkdf2_sha256
 from flask_cors import CORS, cross_origin
-
+from bson.json_util import dumps, loads
 
 
 app = Flask(__name__)
@@ -135,6 +135,8 @@ class plug_points:
             "mob_no":mob_no,
             "plu_point":plu_point
         }
+        dbpl.plug.insert_one(pp)
+        return "Suceessfully Updated"
     def delete(self,plu_point,mob_no):
         pp = {
             "_id": uuid.uuid4().hex,
@@ -142,7 +144,34 @@ class plug_points:
             "mobile_no":mob_no,
             "plu_point":plu_point
         }
-        dbpl.pp.remove({"plu_point":plu_point,"mob_no":mob_no})
+        dbpl.plug.remove({"plu_point":plu_point,"mob_no":mob_no})
+        return "Sucessfully Removed"
+
+
+import math
+
+
+# Python 3 program for the
+# haversine formula
+def haversine(lat1, lon1, lat2, lon2):
+    # distance between latitudes
+    # and longitudes
+    dLat = (lat2 - lat1) * math.pi / 180.0
+    dLon = (lon2 - lon1) * math.pi / 180.0
+
+    # convert to radians
+    lat1 = (lat1) * math.pi / 180.0
+    lat2 = (lat2) * math.pi / 180.0
+
+    # apply formulae
+    a = (pow(math.sin(dLat / 2), 2) +
+         pow(math.sin(dLon / 2), 2) *
+         math.cos(lat1) * math.cos(lat2));
+    rad = 6371
+    c = 2 * math.asin(math.sqrt(a))
+    return rad * c
+
+
 @app.route('/')
 def home():
     return  "Hello World..........."
@@ -209,12 +238,42 @@ def loginprovider():
 
 
 @app.route('/dashboard',methods=['POST'])
+@cross_origin(supports_credentials=True)
 def requestdetails():
     if request.method == 'POST':
         body = request.json
-        print(body)
+        cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
+        print(cursor)
+        plug_data=0
+        for i in cursor:
+            plug_data=list(dbpl.plug.find({"p_name":i["p_name"]}))
+        plug_json=dumps(plug_data)
+        list_cur = list(cursor)
+        json_data = dumps(list_cur)
+        data={
+            "user":json_data,
+            "plug":plug_json
+        }
+        return data
 
-
+@app.route('/getcoordinates',methods=['POST'])
+@cross_origin(supports_credentials=True)
+def getCoordinates():
+    if request.method == 'POST':
+        body = request.json
+        data = dbp.provide
+        lst = []
+        for post in data.find({}, {'_id': 0}):
+            lat=post['latitude']
+            long=post['longitude']
+            name=post['p_name']
+            mob_no=post['mobile_no']
+            if haversine(float(body['lat']),float(body['long']),float(lat),float(long))<=20:
+                lst.append((lat,long,name,mob_no))
+            print(post)
+        print(lst)
+        return jsonify(lst)
+    
 
 if __name__ == "__main__":
     # TODO Valid return statements for all routes
