@@ -2,12 +2,15 @@ import pymongo
 from flask import Flask, jsonify, request, session, redirect, url_for
 import uuid
 from passlib.hash import pbkdf2_sha256
+from flask_cors import CORS, cross_origin
+
+
 
 app = Flask(__name__)
 app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
+CORS(app, support_credentials=True)
 # scheduler=APScheduler()
-app.config['CORS_HEADERS'] = 'Content-Type'
-
+# app.config['CORS_HEADERS'] = 'Content-Type'
 # url = "mongodb+srv://user1234:<password>@cluster0.72wkf1c.mongodb.net/?retryWrites=true&w=majority"
 # client = pymongo.MongoClient(url)
 # db = client.customer_details
@@ -162,8 +165,8 @@ def signup():
 def signout():
     return User().signout()
 
-
 @app.route('/user/login', methods=['POST'])
+@cross_origin(supports_credentials=True)
 def login():
     if request.method == 'POST':
         body = request.json
