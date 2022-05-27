@@ -39,6 +39,7 @@ const BasicForm = (props) => {
   return (
     <form onSubmit={onSubmitHandler}>
       <div className="signup-box">
+        <h3>Sign Up!</h3>
         <div className="control-group">
           <div className={userClass}>
             <label htmlFor="name">userName</label>
@@ -50,7 +51,7 @@ const BasicForm = (props) => {
               value={userName}
             />
             {userHasError && (
-              <p className="error-text">Enter valid first name</p>
+              <p className="error-text">Enter valid Email</p>
             )}
           </div>
           <div className={passClass}>
@@ -63,7 +64,7 @@ const BasicForm = (props) => {
               value={password}
             />
             {passHasError && (
-              <p className="error-text">Enter valid last name</p>
+              <p className="error-text">Enter valid Password</p>
             )}
           </div>
           <div className="form-actions">

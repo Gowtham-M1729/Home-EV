@@ -88,3 +88,12 @@ button:disabled:active {
   color: #b40e0e;
 }
 
+.signup-box {
+    position: absolute;
+    padding:4em;
+    left: 35%;
+    top: 10%;
+    background-color: #E9D5CA;
+    border-radius: 10px;
+}
+
