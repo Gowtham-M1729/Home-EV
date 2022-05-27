@@ -244,7 +244,9 @@ def requestdetails():
         body = request.json
         cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
         print(cursor)
-        plug_data=list(dbpl.plug.find({"p_name":cursor['p_name']}))
+        plug_data=0
+        for i in cursor:
+            plug_data=list(dbpl.plug.find({"p_name":i["p_name"]}))
         plug_json=dumps(plug_data)
         list_cur = list(cursor)
         json_data = dumps(list_cur)
