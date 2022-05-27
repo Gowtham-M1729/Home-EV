@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request, session, redirect, url_for
 import uuid
 from passlib.hash import pbkdf2_sha256
 from flask_cors import CORS, cross_origin
-
+from bson.json_util import dumps, loads
 
 
 app = Flask(__name__)
@@ -143,6 +143,32 @@ class plug_points:
             "plu_point":plu_point
         }
         dbpl.pp.remove({"plu_point":plu_point,"mob_no":mob_no})
+
+
+import math
+
+
+# Python 3 program for the
+# haversine formula
+def haversine(lat1, lon1, lat2, lon2):
+    # distance between latitudes
+    # and longitudes
+    dLat = (lat2 - lat1) * math.pi / 180.0
+    dLon = (lon2 - lon1) * math.pi / 180.0
+
+    # convert to radians
+    lat1 = (lat1) * math.pi / 180.0
+    lat2 = (lat2) * math.pi / 180.0
+
+    # apply formulae
+    a = (pow(math.sin(dLat / 2), 2) +
+         pow(math.sin(dLon / 2), 2) *
+         math.cos(lat1) * math.cos(lat2));
+    rad = 6371
+    c = 2 * math.asin(math.sqrt(a))
+    return rad * c
+
+
 @app.route('/')
 def home():
     return  "Hello World..........."
@@ -212,9 +238,25 @@ def loginprovider():
 def requestdetails():
     if request.method == 'POST':
         body = request.json
-        print(body)
+        cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
+        print(cursor)
+        list_cur = list(cursor)
+        json_data = dumps(list_cur)
+        return json_data
 
-
+@app.route('/getcoordinates',methods=['POST'])
+def getCoordinates():
+    if request.method == 'POST':
+        body = request.json
+        data = db.evnts
+        lst = []
+        for post in data.find({}, {'_id': 0}):
+            lat=post['latitude']
+            long=post['longitude']
+            if haversine(body['lat'],body['long'],lat,long)<=20:
+                lst.append((lat,long))
+        return jsonify(lst)
+    
 
 if __name__ == "__main__":
     # TODO Valid return statements for all routes
