@@ -238,6 +238,7 @@ def loginprovider():
 
 
 @app.route('/dashboard',methods=['POST'])
+@cross_origin(supports_credentials=True)
 def requestdetails():
     if request.method == 'POST':
         body = request.json
@@ -254,6 +255,7 @@ def requestdetails():
         return data
 
 @app.route('/getcoordinates',methods=['POST'])
+@cross_origin(supports_credentials=True)
 def getCoordinates():
     if request.method == 'POST':
         body = request.json
