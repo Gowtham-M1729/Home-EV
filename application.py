@@ -18,6 +18,7 @@ url = "mongodb+srv://user1234:59dLdTzaKaqimTt@user.vl67u.mongodb.net/user_login_
 client = pymongo.MongoClient(url)
 db = client.customer_details
 
+
 class User:
     def start_session(self, user):
         print(user)
@@ -151,6 +152,33 @@ class provider:
 
         return jsonify({"error": "Invalid login credentials"}), 401
 
+
+dbpl = client.plug_points
+
+class plug_points:
+    
+    def update(plu_point,name,mob_no):
+        pp = {
+            "_id": uuid.uuid4().hex,
+            "p_name": name,
+            "mobile_no":mob_no,
+            "plu_point":plu_point
+        }
+        pp['plu_point'] = plu_point
+    def delete(plu_point,name,mob_no):
+        pp = {
+            "_id": uuid.uuid4().hex,
+            "p_name": name,
+            "mobile_no":mob_no,
+            "plu_point":plu_point
+        }
+        dbpl.pp.remove({plu_point:plu_point,mob_no:mob_no})
+        
+@app.route('plugpoints/update',methods=['POST'])
+def update(plu_name):
+    body = request.json
+    print(body)
+    return plug_points().update(body['plu_point'])
 
 
 @app.route('/provider/apply', methods=['POST'])
