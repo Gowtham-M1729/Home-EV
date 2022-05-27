@@ -1,6 +1,7 @@
 import useInput from "../hooks/use-input";
 import "./SignUp.css";
 import { Link } from "react-router-dom";
+import axios from 'axios'
 
 const Login = () => {
     const {
@@ -37,6 +38,23 @@ const Login = () => {
     const userClass = userHasError ? "form-control invalid" : "form-control";
     const passClass = passHasError ? "form-control invalid" : "form-control";
 
+    const submitHandler = async () => {
+        try {
+          if (!userName || !password) return;
+          const response = await axios.post(
+            "https://homeev.herokuapp.com/user/login",
+            {
+                email: userName,
+                password: password
+            },
+            null
+          );
+          console.log(response);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
     return (
         <form onSubmit={onSubmitHandler}>
             <div className="signup-box">
@@ -72,7 +90,7 @@ const Login = () => {
                         <Link to="/Sign-Up" className="link">
                             SignUp Instead
                         </Link>
-                        <button disabled={!isFormValid}>Submit</button>
+                        <button disabled={!isFormValid} onClick={submitHandler}>Submit</button>
                     </div>
                 </div>
             </div>
