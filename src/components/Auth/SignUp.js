@@ -79,7 +79,7 @@ const SignUp = () => {
                 <h3>Sign Up!</h3>
                 <div className="control-group">
                     <div className={userClass}>
-                        <label htmlFor="name">userName</label>
+                        <label htmlFor="name">Email</label>
                         <input
                             type="text"
                             id="name"
@@ -124,7 +124,7 @@ const SignUp = () => {
                     )}
                     <div className="form-actions">
                         <Link Navigate to="/login" className="link">
-                            Login In
+                            Login
                         </Link>
                         <button disabled={!isFormValid} onClick={submitHandler} >Submit</button>
                     </div>
