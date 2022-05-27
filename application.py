@@ -6,7 +6,7 @@ from passlib.hash import pbkdf2_sha256
 app = Flask(__name__)
 app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
 # scheduler=APScheduler()
-
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # url = "mongodb+srv://user1234:<password>@cluster0.72wkf1c.mongodb.net/?retryWrites=true&w=majority"
 # client = pymongo.MongoClient(url)
@@ -28,7 +28,7 @@ class User:
         session['logged_in'] = True
         session['user'] = user
         return jsonify(user), 200
-    
+
     def signup(self, name, email, password,mob_no,reg_no):
         # print(request.form)
 
@@ -139,7 +139,7 @@ class plug_points:
             "mobile_no":mob_no,
             "plu_point":plu_point
         }
-        dbpl.pp.remove({plu_point:plu_point,mob_no:mob_no})
+        dbpl.pp.remove({"plu_point":plu_point,"mob_no":mob_no})
 @app.route('/')
 def home():
     return  "Hello World..........."
@@ -193,16 +193,24 @@ def apply():
 
 
 @app.route('/provider/signout')
-def signout1():
+def signoutprovider():
     return provider().signout()
 
 
 @app.route('/provider/login', methods=['POST'])
-def login1():
+def loginprovider():
     if request.method == 'POST':
         body = request.json
         print(body)
         return  provider().login(body['email'], body['password'])
+
+
+@app.route('/dashboard',methods=['POST'])
+def requestdetails():
+    if request.method == 'POST':
+        body = request.json
+        print(body)
+
 
 
 if __name__ == "__main__":
