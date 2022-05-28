@@ -2,12 +2,15 @@ import pymongo
 from flask import Flask, jsonify, request, session, redirect, url_for
 import uuid
 from passlib.hash import pbkdf2_sha256
+from flask_cors import CORS, cross_origin
+from bson.json_util import dumps, loads
+
 
 app = Flask(__name__)
 app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
+CORS(app, support_credentials=True)
 # scheduler=APScheduler()
-
-
+# app.config['CORS_HEADERS'] = 'Content-Type'
 # url = "mongodb+srv://user1234:<password>@cluster0.72wkf1c.mongodb.net/?retryWrites=true&w=majority"
 # client = pymongo.MongoClient(url)
 # db = client.customer_details
@@ -17,6 +20,8 @@ app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
 url = "mongodb+srv://user1234:59dLdTzaKaqimTt@user.vl67u.mongodb.net/user_login_system?retryWrites=true&w=majority"
 client = pymongo.MongoClient(url)
 db = client.customer_details
+dbpl = client.plug_points
+dbp = client.providers
 
 
 class User:
@@ -69,37 +74,6 @@ class User:
         return jsonify({"error": "Invalid login credentials"}), 401
 
 
-@app.route('/')
-def home():
-    return  "Hello World..........."
-
-
-@app.route('/home')
-def test():
-    return  "Hello ..."
-
-
-@app.route('/user/signup', methods=['POST'])
-def signup():
-    body = request.json
-    print(body)
-    print(body['email'], body['password'])
-    return User().signup(body['name'], body['email'], body['password'],body['mob_no'],body['reg_no'])
-
-
-@app.route('/user/signout')
-def signout():
-    return User().signout()
-
-
-@app.route('/user/login', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        body = request.json
-        print(body)
-        return  User().login(body['email'], body['password'])
-
-dbp = client.providers
 
 
 class provider:
@@ -109,7 +83,6 @@ class provider:
         session['logged_in'] = True
         session['provider'] = provider
         return jsonify(provider), 200
-
     def apply(self, name, email, password,mob_no,lat,long):
         # print(request.form)
         print("dfg")
@@ -153,33 +126,95 @@ class provider:
         return jsonify({"error": "Invalid login credentials"}), 401
 
 
-dbpl = client.plug_points
 
 class plug_points:
-    
-    def update(plu_point,name,mob_no):
+    def update(self,plu_point,name,mob_no):
+        pp = {
+            "_id": uuid.uuid4().hex,
+            "p_name": name,
+            "mob_no":mob_no,
+            "plu_point":plu_point
+        }
+        dbpl.plug.insert_one(pp)
+        return "Suceessfully Updated"
+    def delete(self,plu_point,mob_no):
         pp = {
             "_id": uuid.uuid4().hex,
             "p_name": name,
             "mobile_no":mob_no,
             "plu_point":plu_point
         }
-        pp['plu_point'] = plu_point
-    def delete(plu_point,name,mob_no):
-        pp = {
-            "_id": uuid.uuid4().hex,
-            "p_name": name,
-            "mobile_no":mob_no,
-            "plu_point":plu_point
-        }
-        dbpl.pp.remove({plu_point:plu_point,mob_no:mob_no})
-        
-@app.route('plugpoints/update',methods=['POST'])
-def update(plu_name):
+        dbpl.plug.remove({"plu_point":plu_point,"mob_no":mob_no})
+        return "Sucessfully Removed"
+
+
+import math
+
+
+# Python 3 program for the
+# haversine formula
+def haversine(lat1, lon1, lat2, lon2):
+    # distance between latitudes
+    # and longitudes
+    dLat = (lat2 - lat1) * math.pi / 180.0
+    dLon = (lon2 - lon1) * math.pi / 180.0
+
+    # convert to radians
+    lat1 = (lat1) * math.pi / 180.0
+    lat2 = (lat2) * math.pi / 180.0
+
+    # apply formulae
+    a = (pow(math.sin(dLat / 2), 2) +
+         pow(math.sin(dLon / 2), 2) *
+         math.cos(lat1) * math.cos(lat2));
+    rad = 6371
+    c = 2 * math.asin(math.sqrt(a))
+    return rad * c
+
+
+@app.route('/')
+def home():
+    return  "Hello World..........."
+
+
+@app.route('/home')
+def test():
+    return  "Hello ..."
+
+
+@app.route('/user/signup', methods=['POST'])
+def signup():
     body = request.json
     print(body)
-    return plug_points().update(body['plu_point'])
+    print(body['email'], body['password'])
+    return User().signup(body['name'], body['email'], body['password'],body['mob_no'],body['reg_no'])
 
+
+@app.route('/user/signout')
+def signout():
+    return User().signout()
+
+@app.route('/user/login', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def login():
+    if request.method == 'POST':
+        body = request.json
+        print(body)
+        return  User().login(body['email'], body['password'])
+
+
+@app.route('/plugpoints/update',methods=['POST'])
+def update():
+    body = request.json
+    print(body)
+    return plug_points().update(body['plu_point'],body['name'],body['mob_no'])
+
+
+@app.route('/plugpoints/delete',methods=['POST'])
+def delete():
+    body = request.json
+    print(body)
+    return plug_points().delete(body['plu_point'],body['mob_no'])
 
 @app.route('/provider/apply', methods=['POST'])
 def apply():
@@ -190,17 +225,55 @@ def apply():
 
 
 @app.route('/provider/signout')
-def signout1():
+def signoutprovider():
     return provider().signout()
 
 
 @app.route('/provider/login', methods=['POST'])
-def login1():
+def loginprovider():
     if request.method == 'POST':
         body = request.json
         print(body)
         return  provider().login(body['email'], body['password'])
 
+
+@app.route('/dashboard',methods=['POST'])
+@cross_origin(supports_credentials=True)
+def requestdetails():
+    if request.method == 'POST':
+        body = request.json
+        cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
+        print(cursor)
+        plug_data=0
+        for i in cursor:
+            plug_data=list(dbpl.plug.find({"p_name":i["p_name"]}))
+        plug_json=dumps(plug_data)
+        list_cur = list(cursor)
+        json_data = dumps(list_cur)
+        data={
+            "user":json_data,
+            "plug":plug_json
+        }
+        return data
+
+@app.route('/getcoordinates',methods=['POST'])
+@cross_origin(supports_credentials=True)
+def getCoordinates():
+    if request.method == 'POST':
+        body = request.json
+        data = dbp.provide
+        lst = []
+        for post in data.find({}, {'_id': 0}):
+            lat=post['latitude']
+            long=post['longitude']
+            name=post['p_name']
+            mob_no=post['mobile_no']
+            if haversine(float(body['lat']),float(body['long']),float(lat),float(long))<=20:
+                lst.append((lat,long,name,mob_no))
+            print(post)
+        print(lst)
+        return jsonify(lst)
+    
 
 if __name__ == "__main__":
     # TODO Valid return statements for all routes
