@@ -35,6 +35,8 @@ const Login = () => {
         console.log(userName, password);
         userReset();
         passReset();
+        localStorage.removeItem('email');
+        localStorage.setItem('email', {userName});
     };
 
     const userClass = userHasError ? "form-control invalid" : "form-control";

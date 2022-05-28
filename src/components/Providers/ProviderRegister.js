@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import useInput from "../hooks/use-input";
 import "../Auth//SignUp.css";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Checkbox } from "@mui/material";
 import axios from "axios";
 
 const SignUp = () => {
+    const navigate = Navigate()
     const [error, setError] = useState(false);
     const [radio, setRadio] = useState(false);
 
@@ -118,6 +119,9 @@ const SignUp = () => {
               },
               null
             );
+            if(response){
+                navigate('/provider-login')
+            }
            
             console.log(response);
           } catch (err) {
@@ -293,7 +297,7 @@ const SignUp = () => {
                     </div>
                     <br />
                     <div className="form-actions">
-                        <Link Navigate to="/login" className="link">
+                        <Link Navigate to="/provider-login" className="link">
                             Login In
                         </Link>
                         <button disabled={!isFormValid}>Submit</button>
