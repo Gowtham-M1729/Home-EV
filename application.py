@@ -4,7 +4,11 @@ import uuid
 from passlib.hash import pbkdf2_sha256
 from flask_cors import CORS, cross_origin
 from bson.json_util import dumps, loads
-
+import os
+import math
+import random
+import smtplib
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = b'\xcc^\x91\xea\x17-\xd0W\x03\xa7\xf8J0\xac8\xc5'
@@ -22,6 +26,7 @@ client = pymongo.MongoClient(url)
 db = client.customer_details
 dbpl = client.plug_points
 dbp = client.providers
+dbq=client.queue
 
 
 class User:
@@ -171,6 +176,26 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.asin(math.sqrt(a))
     return rad * c
 
+def sendotp(email):
+    digits = "0123456789"
+    OTP = ""
+    for i in range(6):
+        OTP += digits[math.floor(random.random() * 10)]
+    otp = OTP + " is your OTP"
+    msg = otp
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login("gowtham1842001@gmail.com", "wnjityvchfaiastn")
+    emailid = email
+    s.sendmail('&&&&&&&&&&&', emailid, msg)
+    return OTP
+
+
+def queue():
+    body = request.json
+    print(body)
+    print(body['email'], body['password'])
+    return User().signup(body['name'], body['email'], body['password'],body['mob_no'],body['reg_no'])
 
 @app.route('/')
 def home():
@@ -244,9 +269,9 @@ def requestdetails():
         body = request.json
         cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
         print(cursor)
-        plug_data=0
+        plug_data=[]
         for i in cursor:
-            plug_data=list(dbpl.plug.find({"p_name":i["p_name"]}))
+            plug_data.append(list(dbpl.plug.find({"p_name":i["p_name"]})))
         plug_json=dumps(plug_data)
         list_cur = list(cursor)
         json_data = dumps(list_cur)
@@ -255,6 +280,7 @@ def requestdetails():
             "plug":plug_json
         }
         return data
+
 
 @app.route('/getcoordinates',methods=['POST'])
 @cross_origin(supports_credentials=True)
@@ -269,11 +295,48 @@ def getCoordinates():
             name=post['p_name']
             mob_no=post['mobile_no']
             if haversine(float(body['lat']),float(body['long']),float(lat),float(long))<=20:
-                lst.append((lat,long,name,mob_no))
+                lst.append({
+                    "longitude":long,
+                    "latitude":lat,
+                    "name":name,
+                    "mob_no":mob_no
+                })
             print(post)
         print(lst)
         return jsonify(lst)
-    
+
+
+@app.route('/user/otp', methods=['POST'])
+async def sendotp():
+    if request.method == 'POST':
+        body = request.json
+        print(body)
+        k=sendotp(body['email'])
+        wait(30)
+        a = input("Enter Your OTP >>: ")
+        if a == OTP:
+            print("Verified")
+        else:
+            print("Please Check your OTP again")
+
+@app.route('/device/otp', methods=['POST'])
+async def receievotp():
+    if request.method == 'POST':
+        body = request.json
+        print(body)
+        otp=body['OTP']
+
+
+@app.route('/user/Queue', methods=['POST'])
+def queue():
+    body = request.json
+    print(body)
+    print(body['email'])
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    data = {'email': email,
+            'initial_time':current_time, 'otp':OTP}
+    dbq.queue.insert_one(data)
 
 if __name__ == "__main__":
     # TODO Valid return statements for all routes
