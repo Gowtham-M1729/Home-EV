@@ -4,6 +4,10 @@ import uuid
 from passlib.hash import pbkdf2_sha256
 from flask_cors import CORS, cross_origin
 from bson.json_util import dumps, loads
+import os
+import math
+import random
+import smtplib
 
 
 app = Flask(__name__)
@@ -171,6 +175,19 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.asin(math.sqrt(a))
     return rad * c
 
+# def sendotp(email):
+#     digits = "0123456789"
+#     OTP = ""
+#     for i in range(6):
+#         OTP += digits[math.floor(random.random() * 10)]
+#     otp = OTP + " is your OTP"
+#     msg = otp
+#     s = smtplib.SMTP('smtp.gmail.com', 587)
+#     s.starttls()
+#     s.login("gowtham1842001@gmail.com", "wnjityvchfaiastn")
+#     emailid = email
+#     s.sendmail('&&&&&&&&&&&', emailid, msg)
+#     
 
 @app.route('/')
 def home():
@@ -270,11 +287,29 @@ def getCoordinates():
             name=post['p_name']
             mob_no=post['mobile_no']
             if haversine(float(body['lat']),float(body['long']),float(lat),float(long))<=20:
-                lst.append((lat,long,name,mob_no))
+                lst.append({
+                    "longitude":long,
+                    "latitude":lat,
+                    "name":name,
+                    "mob_no":mob_no
+                })
             print(post)
         print(lst)
         return jsonify(lst)
-    
+
+# 
+# @app.route('/user/otp', methods=['POST'])
+# async def sendotp():
+#     if request.method == 'POST':
+#         body = request.json
+#         print(body)
+#         k=sendotp(body['email'])
+#         wait(30)
+#         a = input("Enter Your OTP >>: ")
+#         if a == OTP:
+#             print("Verified")
+#         else:
+#             print("Please Check your OTP again")
 
 if __name__ == "__main__":
     # TODO Valid return statements for all routes
