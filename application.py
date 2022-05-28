@@ -267,13 +267,17 @@ def loginprovider():
 def requestdetails():
     if request.method == 'POST':
         body = request.json
-        cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
+        cursor=dbp.provide
+        for post in cursor.find({"longitude": body['long'],"latitude":body['lat']}):
+            print(post)
         print(cursor)
         plug_data=[]
         for i in cursor:
+            print(i)
             plug_data.append(list(dbpl.plug.find({"p_name":i["p_name"]})))
         plug_json=dumps(plug_data)
         list_cur = list(cursor)
+        print(list_cur)
         json_data = dumps(list_cur)
         data={
             "user":json_data,
@@ -307,6 +311,7 @@ def getCoordinates():
 
 
 @app.route('/user/otp', methods=['POST'])
+@cross_origin(supports_credentials=True)
 async def sendotp():
     if request.method == 'POST':
         body = request.json
@@ -315,11 +320,12 @@ async def sendotp():
         wait(30)
         a = input("Enter Your OTP >>: ")
         if a == OTP:
-            print("Verified")
+            return "Verified"
         else:
-            print("Please Check your OTP again")
+            return "Please Check your OTP again"
 
 @app.route('/device/otp', methods=['POST'])
+@cross_origin(supports_credentials=True)
 async def receievotp():
     if request.method == 'POST':
         body = request.json
