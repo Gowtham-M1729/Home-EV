@@ -267,15 +267,23 @@ def loginprovider():
 def requestdetails():
     if request.method == 'POST':
         body = request.json
-        cursor=dbp.provide.find({"longitude": body['long'],"latitude":body['lat']})
-        print(cursor)
-        plug_data=[]
-        for i in cursor:
-            plug_data.append(list(dbpl.plug.find({"p_name":i["p_name"]})))
+        cursor=dbp.provide
+        data=cursor.find({"longitude": body['long'],"latitude":body['lat']})
+        print(data['p_name'])
+        plug_data.append(list(dbpl.plug.find({"p_name":i["p_name"]})))
         plug_json=dumps(plug_data)
         list_cur = list(cursor)
+        print(list_cur)
         json_data = dumps(list_cur)
         data={
+            "user":json_data,
+            "plug":plug_json
+        }#     plug_data.append(list(dbpl.plug.find({"p_name":i["p_name"]})))
+        plug_json=dumps(plug_data)
+        list_cur = list(cursor)
+        print(list_cur)
+        json_data = dumps(list_cur)
+        data1={
             "user":json_data,
             "plug":plug_json
         }
@@ -307,25 +315,36 @@ def getCoordinates():
 
 
 @app.route('/user/otp', methods=['POST'])
+@cross_origin(supports_credentials=True)
 async def sendotp():
     if request.method == 'POST':
         body = request.json
         print(body)
         k=sendotp(body['email'])
-        wait(30)
+        # wait(30)
         a = input("Enter Your OTP >>: ")
         if a == OTP:
-            print("Verified")
+            return "Verified"
         else:
-            print("Please Check your OTP again")
+            return "Please Check your OTP again"
+    return "valid response"
 
 @app.route('/device/otp', methods=['POST'])
+@cross_origin(supports_credentials=True)
 async def receievotp():
     if request.method == 'POST':
         body = request.json
         print(body)
         otp=body['OTP']
-
+        if dbq.queue.find_one({"OTP": otp}):
+            dbq.queue.remove({
+                "OTP":otp
+            })
+    dbq.queue.update({
+        "p_email":email
+    },{
+            "final_time":finall},
+    {upsert: true})
 
 @app.route('/user/Queue', methods=['POST'])
 def queue():
