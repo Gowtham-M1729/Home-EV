@@ -9,13 +9,27 @@ import {
 } from '@aws-amplify/ui-react'
 import { useState } from 'react'
 import { Marker, Popup } from 'react-map-gl'
+import axios from 'axios'
 
-function MarkerWithPopup({ latitude, longitude, title, description, image }) {
+function MarkerWithPopup({ latitude, longitude, title, description, image, lat, lon }) {
 	const [showPopup, setShowPopup] = useState(false)
 
-	const handleMarkerClick = ({ originalEvent }) => {
+	const handleMarkerClick = async ({ originalEvent }) => {
 		originalEvent.stopPropagation()
 		setShowPopup(true)
+		try {
+			const response = await axios.post(
+			  "https://homeev.herokuapp.com/dashboard",
+			  {
+				  long: lon,
+				  lat: lat
+			  },
+			  null
+			);
+			console.log(response.data);
+		  } catch (err) {
+			console.error(err);
+		  }
 	}
 
 	return (

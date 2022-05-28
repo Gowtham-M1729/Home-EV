@@ -4,6 +4,7 @@ import useInput from "../hooks/use-input";
 import "../Auth//SignUp.css";
 import { Link } from "react-router-dom";
 import { Checkbox } from "@mui/material";
+import axios from "axios";
 
 const SignUp = () => {
     const [error, setError] = useState(false);
@@ -54,17 +55,38 @@ const SignUp = () => {
         reset: confPassReset,
     } = useInput((value) => value.trim() !== "");
 
+    const {
+        value: lat,
+        valueIsValid: latIsValid,
+        hasError: latHasError,
+        inputHandler: latInputHandler,
+        onBlurHandler: latBlurHandler,
+        reset: latReset,
+    } = useInput((value) => value.trim() !== "");
+
+    const {
+        value: lon,
+        valueIsValid: lonIsValid,
+        hasError: lonHasError,
+        inputHandler: lonInputHandler,
+        onBlurHandler: lonBlurHandler,
+        reset: lonReset,
+    } = useInput((value) => value.trim() !== "");
+
     let isFormValid = false;
     if (
         userNameIsValid &&
         userNumberIsValid &&
         userMailIdIsValid &&
         passIsValid &&
-        confPassIsValid
+        confPassIsValid &&
+        latIsValid &&
+        lonIsValid &&
+        radio
     )
         isFormValid = true;
 
-    const onSubmitHandler = (event) => {
+    const onSubmitHandler = async(event) => {
         event.preventDefault();
 
         if (
@@ -72,18 +94,46 @@ const SignUp = () => {
             !userNumberIsValid &&
             !userMailIdIsValid &&
             !passIsValid &&
-            !confPassIsValid
+            !confPassIsValid &&
+            !latIsValid &&
+            !lonIsValid
         )
             return;
 
-        if (password !== confPassword) setError(true);
+        if (password !== confPassword) {
+            setError(true);
+            return
+        }
+        try {
+            if (!userName || !password) return;
+            const response = await axios.post(
+              "https://homeev.herokuapp.com/provider/apply",
+              {
+                email: userMailId,
+                password: password,
+                name: userName,
+                mob_no: userNumber,
+                lat:lat,
+                long:lon
+              },
+              null
+            );
+           
+            console.log(response);
+          } catch (err) {
+            console.error(err);
+            
+          }
 
-        console.log(userName, userNumber, userMailId, password);
+
+       
         userNameReset();
         userNumberReset();
         userReset();
         passReset();
         confPassReset();
+        latReset();
+        lonReset();
     };
 
     const userNameClass = userNameHasError
@@ -97,16 +147,18 @@ const SignUp = () => {
     const confPassClass = confPassHasError
         ? "form-control invalid"
         : "form-control";
+    const latClass = latHasError ? "form-control invalid" : "form-control";
+    const lonClass = lonHasError ? "form-control invalid" : "form-control";
 
     const handleClick = (e) => {
-        setRadio(e);
-        console.log(e);
+        console.log(e.target.value);
+        setRadio(prev=>!prev)
     };
 
     return (
         <form onSubmit={onSubmitHandler}>
             <div className="signup-box">
-                <h3>Sign Up!</h3>
+                <h3>register Up!</h3>
                 <div className="control-group">
                     <div className={userNameClass}>
                         <label htmlFor="name">Name</label>
@@ -159,6 +211,44 @@ const SignUp = () => {
                             <p className="error-text">Enter valid Email</p>
                         )}
                     </div>
+                    <div className={latClass}>
+                        <label htmlFor="name">latitude</label>
+                        <input
+                            type="name"
+                            id="lat"
+                            min={-90}
+                            max={90}
+                            name="num"
+                            onChange={latInputHandler}
+                            onBlur={latBlurHandler}
+                            value={lat}
+                            placeholder="lat"
+                        />
+                        {latHasError && (
+                            <p className="error-text">
+                                Enter valid latitude
+                            </p>
+                        )}
+                    </div>
+                    <div className={lonClass}>
+                        <label htmlFor="name">longitude</label>
+                        <input
+                            type="name"
+                            id="lon"
+                            min={-180}
+                            max={180}
+                            name="num"
+                            onChange={lonInputHandler}
+                            onBlur={lonBlurHandler}
+                            value={lon}
+                            placeholder="Enter longitude"
+                        />
+                        {userNumberHasError && (
+                            <p className="error-text">
+                                Enter valid longitude
+                            </p>
+                        )}
+                    </div>
                     <div className={passClass}>
                         <label htmlFor="name">Password</label>
                         <input
@@ -193,11 +283,10 @@ const SignUp = () => {
                         </p>
                     )}
                     <div>
-                        {/* <input type="checkbox" onChange={this.handleClick}/> I agree to share current location */}
+                        { console.log(radio)}
                         <Checkbox
-                            otherProps
-                            onChange={(e) => this.handleClick}
-                            htmlfor="checkBox"
+                            onChange={handleClick}
+                            value={false}
                         >
                         </Checkbox>
                         <label id="checkbox">I agree to share current location</label>

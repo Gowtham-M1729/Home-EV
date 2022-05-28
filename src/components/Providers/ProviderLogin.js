@@ -1,11 +1,9 @@
 import useInput from "../hooks/use-input";
-import "./SignUp.css";
-import { Link, Navigate } from "react-router-dom";
+import "../Auth/SignUp.css";
+import { Link } from "react-router-dom";
 import axios from 'axios'
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-    const navigate = useNavigate()
     const {
         value: userName,
         valueIsValid: userNameIsValid,
@@ -44,7 +42,7 @@ const Login = () => {
         try {
           if (!userName || !password) return;
           const response = await axios.post(
-            "https://homeev.herokuapp.com/user/login",
+            "https://homeev.herokuapp.com/provider/login",
             {
                 email: userName,
                 password: password
@@ -52,10 +50,6 @@ const Login = () => {
             null
           );
           console.log(response);
-          if(response.data)
-          {
-            navigate('/map')
-          }
         } catch (err) {
           console.error(err);
         }
@@ -93,8 +87,8 @@ const Login = () => {
                         )}
                     </div>
                     <div className="form-actions">
-                        <Link to="/Sign-Up" className="link">
-                            SignUp Instead
+                        <Link to="/provider-signup" className="link">
+                            Register
                         </Link>
                         <button disabled={!isFormValid} onClick={submitHandler}>Submit</button>
                     </div>

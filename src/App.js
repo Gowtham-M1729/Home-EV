@@ -4,6 +4,9 @@ import SignUp from "./components/Auth/SignUp";
 import Login from "./components/Auth/Login";
 import { Route, Routes, Navigate, BrowserRouter } from "react-router-dom";
 import MapViewer from "./components/Map/MapViewer";
+import ProviderRegister from './components/Providers/ProviderRegister'
+import ProviderLogin from './components/Providers/ProviderLogin'
+import Home from "./components/Home";
 
 function App() {
 
@@ -27,8 +30,10 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login/>} />
           <Route path="/Sign-Up" element={<SignUp />} />
-          <Route exact path="/" element={<Navigate to="/login" />} />
+          <Route exact path="/" element={<Home/>} />
           <Route path="/map" element={<MapViewer lat={lat} lon={lon}/>} />
+          <Route path = "/provider-signup" element={<ProviderRegister/>}/>
+          <Route path = "/provider-login" element={<ProviderLogin/>}/>
         </Routes>
       </div>
     </BrowserRouter>
