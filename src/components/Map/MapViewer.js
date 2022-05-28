@@ -4,50 +4,78 @@ import {
 	MapView,
 	View,
 } from '@aws-amplify/ui-react'
-import { useState } from 'react'
+import { useState,useEffect,useCallback } from 'react'
 import { Marker, Popup } from 'react-map-gl'
 import MarkerWithPopup from './MarkerWithPopup'
+import axios from 'axios'
+
 function MapViewer(props) {
   console.log(props)
+
+  const [points, setPoints] = useState([])
+
+  const queryOnce = useCallback(async ()=>{
+    try {
+      if(!props.lat || !props.lon ) return
+      const response = await axios.post(
+        "https://homeev.herokuapp.com/getcoordinates",
+        {
+          long: props.lon,
+          lat: props.lat
+        },
+        null
+      );
+      setPoints(response.data)
+      console.log(response.data)
+      } catch (err) {
+      console.error(err);
+      }
+  },[props.lon,props.lat])
+
+  useEffect(()=>{
+    queryOnce()
+  },[queryOnce])
+
 
   const locationData = [
     {
       id: 1,
       title: 'Amplify Team Dinner',
-      description:
-        "It's not everyone, but I'm grateful I was able to see folks in real life and bond over food, drinks and laughs!",
-      image:
-        'https://aws-map-seattle-blog-pics.s3.amazonaws.com/public/IMG_20220330_204113.jpeg',
       longitude: +props.lon,
       latitude: +props.lat,
     }
   ]
 
 	return (
+    <>
 		<View>
 			<Flex direction={'column'} alignItems={'left'}>
-				<Heading level={3}>Amplify Seattle Visit</Heading>
+				<Heading level={3}>Map Data</Heading>
 				<MapView
+          
 					initialViewState={{
 						longitude: +props.lon,
 						latitude: +props.lat,
 						zoom: 12,
 					}}
-					style={{ width: '600px', height: '600px' }}
+					style={{ width: '800px', height: '600px' }}
 				>
-					{locationData.map((loc) => (
+					{points.map((loc) => (
 						<MarkerWithPopup
-							key={loc.id}
+							
 							latitude={loc.latitude}
 							longitude={loc.longitude}
-							title={loc.title}
-							description={loc.description}
+							title={loc.name}
+							description={loc.mob_no}
 							image={loc.image}
+              lat={+props.lat}
+              lon={+props.lon}
 						/>
 					))}
 				</MapView>
 			</Flex>
 		</View>
+    </>
 	)
 }
 
