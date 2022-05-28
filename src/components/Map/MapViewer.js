@@ -1,4 +1,5 @@
 import {
+  Button,
 	Flex,
 	Heading,
 	MapView,
@@ -11,8 +12,11 @@ import axios from 'axios'
 
 function MapViewer(props) {
   console.log(props)
+ 
 
   const [points, setPoints] = useState([])
+  const email = localStorage.getItem('email');
+  
 
   const queryOnce = useCallback(async ()=>{
     try {
@@ -36,6 +40,7 @@ function MapViewer(props) {
     queryOnce()
   },[queryOnce])
 
+  console.log(email)
 
   const locationData = [
     {
@@ -45,6 +50,32 @@ function MapViewer(props) {
       latitude: +props.lat,
     }
   ]
+
+  const submitHandler = async()=>{
+    try {
+      
+      const response = await axios.post(
+        "https://homeev.herokuapp.com/users/otp",
+        {
+          email: email
+        },
+        null
+      );
+      
+      console.log(response.data)
+      } catch (err) {
+      console.error(err);
+      }
+  }
+
+  const val = {
+    longitude: +props.lon,
+		latitude: +props.lat,
+    mob_no: "current location",
+    title: "customer"
+  }
+  
+  
 
 	return (
     <>
@@ -58,8 +89,16 @@ function MapViewer(props) {
 						latitude: +props.lat,
 						zoom: 12,
 					}}
-					style={{ width: '800px', height: '600px' }}
+					style={{ width: '120vw', height: '80vh' }}
+          
 				>
+          <Marker
+				latitude={+props.lat}
+				longitude={+props.lon}
+				
+				scale={0.8}
+				color={'green'}
+			/>
 					{points.map((loc) => (
 						<MarkerWithPopup
 							
@@ -75,6 +114,9 @@ function MapViewer(props) {
 				</MapView>
 			</Flex>
 		</View>
+    <Button variant="contained" onClick={submitHandler}>
+      Request Authorization
+    </Button>
     </>
 	)
 }
