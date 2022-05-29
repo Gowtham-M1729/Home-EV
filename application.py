@@ -185,7 +185,7 @@ def sendotp(email):
     msg = otp
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
-    s.login("gowtham1842001@gmail.com", "wnjityvchfaiastn")
+    s.login("gowtham1842001@gmail.com", "apppassword")
     emailid = email
     s.sendmail('&&&&&&&&&&&', emailid, msg)
     return OTP
